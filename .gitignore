@@ -1,3 +1,7 @@
 *~
 *.elc
 
+/elpa/
+/history
+/places
+/smex-items
