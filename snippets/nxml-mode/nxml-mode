@@ -1,0 +1,19 @@
+  c:/Users/Chris/OneDrive/Emacs/snippets/nxml-mode:
+  total used in directory 11 available 105006448
+  drwxrwxrwx  1 Administrators Chris 4096 01-26 14:45 .
+  drwxrwxrwx  1 Administrators Chris 4096 01-26 14:45 ..
+  -rw-rw-rw-  1 Administrators Chris  111 01-26 14:45 body
+  -rw-rw-rw-  1 Administrators Chris   84 01-26 14:45 br
+  -rw-rw-rw-  1 Administrators Chris  155 01-26 14:45 form
+  -rw-rw-rw-  1 Administrators Chris  121 01-26 14:45 href
+  -rw-rw-rw-  1 Administrators Chris  194 01-26 14:45 html
+  -rw-rw-rw-  1 Administrators Chris  124 01-26 14:45 img
+  -rw-rw-rw-  1 Administrators Chris  125 01-26 14:45 input
+  -rw-rw-rw-  1 Administrators Chris  184 01-26 14:45 link
+  -rw-rw-rw-  1 Administrators Chris  173 01-26 14:45 meta
+  -rw-rw-rw-  1 Administrators Chris  107 01-26 14:45 name
+  -rw-rw-rw-  1 Administrators Chris  133 01-26 14:45 quote
+  -rw-rw-rw-  1 Administrators Chris  177 01-26 14:45 style
+  -rw-rw-rw-  1 Administrators Chris  114 01-26 14:45 tag
+  -rw-rw-rw-  1 Administrators Chris  101 01-26 14:45 tag_closing
+  -rw-rw-rw-  1 Administrators Chris  126 01-26 14:45 tag_newline

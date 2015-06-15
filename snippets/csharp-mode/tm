@@ -1,0 +1,12 @@
+#name : TE test
+# key: tm
+# --
+/// <summary>
+/// $5
+/// </summary>
+/// <value>$6</value>
+[TestMethod]
+public void $3()
+{
+	$0
+}

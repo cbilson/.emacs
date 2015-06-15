@@ -1,0 +1,33 @@
+# -*- mode: snippet; require-final-newline: nil -*-
+# name: class file
+# key: classf
+# --
+// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="${1:$(file- name- nondirectory (file-name-sans-extension (buffer-file-name)))}.cs" company="Microsoft">
+//   © Microsoft Corporation. All rights reserved.
+// </copyright>
+//
+// <summary>
+//   ${2:summary}
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
+
+namespace Microsoft.Windows.Azure.Fabric.$3
+{
+    using System;
+    using System.IO;
+
+    /// <summary>
+    ///   $2
+    /// </summary>
+    public class $1
+    {
+        /// <summary>
+        ///   Initializes a new instance of the <see cref="$2" /> class.
+        /// </summary>
+        public $1()
+        {
+          
+        }
+    }
+}

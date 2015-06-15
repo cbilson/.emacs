@@ -1,7 +1,17 @@
 *~
 *.elc
+\#*
 
 /elpa/
 /history
 /places
 /smex-items
+
+Work*
+Capture*
+Git*
+Log*
+
+settings.el
+settings.html
+
