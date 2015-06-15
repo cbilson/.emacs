@@ -635,7 +635,8 @@ It can be loaded by putting the following in your .emacs.d/init.el:
      [[http://stackoverflow.com/questions/885793/emacs-error-when-calling-server-start][Emacs - Error when calling (server-start)]]
      
      #+BEGIN_SRC emacs-lisp
-       (set-file-modes (expand-file-name "~/.emacs.d/server") #o700)
+       (when (eq window-system 'w32)
+         (set-file-modes (expand-file-name "~/.emacs.d/server") #o700))
      #+END_SRC
 
      #+BEGIN_SRC powershell
