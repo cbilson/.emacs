@@ -212,6 +212,7 @@ It can be loaded by putting the following in your .emacs.d/init.el:
       ;; Themes
       smyx-theme
       darktooth-theme
+      material-theme
 
       ;; Saw this mentioned here: [1]
       ace-isearch
@@ -493,8 +494,8 @@ It can be loaded by putting the following in your .emacs.d/init.el:
              ;; mouse-wheel-follow-mouse t
              )
 
-       (when (package-installed-p 'darktooth-theme)
-         (load-theme 'darktooth t))
+       (when (package-installed-p 'material-theme)
+         (load-theme 'material t))
 
        ;; Fonts
        ;;(set-face-attribute 'default nil ...)
