@@ -187,8 +187,14 @@ It can be loaded by putting the following in your .emacs.d/init.el:
             (message "File '%s' successfully renamed to '%s'"
                      name (file-name-nondirectory new-name)))))))
 
-  (defun cbilson/compilation-mode-hook ()
-    )
+  (defun cbilson/first-existing-file (files)
+    (let ((candidates (mapcar #'substitute-in-file-name files)))
+      (find-if #'file-exists-p candidates)))
+
+  (defun cbilson/first-existing-dir (files)
+    (let ((candidates (mapcar #'substitute-in-file-name files)))
+      (file-name-as-directory
+       (find-if #'file-exists-p candidates))))
 
   (defun cbilson/join-line-back ()
     (interactive)
@@ -284,7 +290,8 @@ It can be loaded by putting the following in your .emacs.d/init.el:
       omnisharp
 
       ;; Powershell
-      powershell
+      ;; powershell
+      ;; Using my fork instead
 
       ;; misc major modes
       csv-mode
@@ -356,7 +363,7 @@ It can be loaded by putting the following in your .emacs.d/init.el:
       (setq backup-by-copying t
             backup-directory-alist
             `((".*" . ,(file-name-as-directory cbilson/backups-dir)))
-            auto-save-file-name-transform 
+            auto-save-file-name-transform
             `((".*" ,(file-name-as-directory cbilson/backups-dir) t))
             create-lock-files nil
             delete-old-versions t
@@ -366,7 +373,7 @@ It can be loaded by putting the following in your .emacs.d/init.el:
     #+end_src
 
 *** Whitespace
-   
+
     - No tabs, 2-spaces, by default. Show column numbers.
 
       #+begin_src emacs-lisp
@@ -384,7 +391,7 @@ It can be loaded by putting the following in your .emacs.d/init.el:
       #+end_src
 
     - Make sure files have final newline characters when saved.
-  
+
       #+begin_src emacs-lisp
       (setq require-final-newline t)
       #+end_src
@@ -397,7 +404,7 @@ It can be loaded by putting the following in your .emacs.d/init.el:
     #+end_src
 
 *** Echoing Commands
-   
+
     Echo unfinished commands after 0.1 seconds of pause.
 
     #+begin_src emacs-lisp
@@ -441,8 +448,6 @@ It can be loaded by putting the following in your .emacs.d/init.el:
 .NET in particular has a lot of file extensions that are basically XML files.
 
 #+begin_src emacs-lisp
-  ;; (autoload 'powershell-mode "powershell-mode")
-
   (setq auto-mode-alist
         (append auto-mode-alist
                 '(("\\.asm$" . nasm-mode)
@@ -515,7 +520,7 @@ It can be loaded by putting the following in your .emacs.d/init.el:
    - Bump up the font size
 
    But now it looks great.
-   
+
    #+begin_src emacs-lisp
      (when (eq window-system 'w32)
 
@@ -627,13 +632,13 @@ It can be loaded by putting the following in your .emacs.d/init.el:
     [HKEY_CLASSES_ROOT\Directory\shell\openwemacs\command]
     @="C:\\ProgramData\\Chocolatey\\bin\\emacsclient.exe -n \"%1\" --alternate-editor\"notepad\" --quiet"
     #+END_QUOTE
-    
+
 *** Problems
 
 **** server-start complains that the server folder is unsafe
 
      [[http://stackoverflow.com/questions/885793/emacs-error-when-calling-server-start][Emacs - Error when calling (server-start)]]
-     
+
      #+BEGIN_SRC emacs-lisp
        (when (eq window-system 'w32)
          (set-file-modes (expand-file-name "~/.emacs.d/server") #o700))
@@ -653,90 +658,99 @@ It can be loaded by putting the following in your .emacs.d/init.el:
    modes. The elisp to actually do the bindings is spread around, but
    it's nice to have them all in one place too.
 
-| Shortcut         | What it Does                                         |
-|------------------+------------------------------------------------------|
-| C-_              | undo-tree-undo                                       |
-| C-+              | text-scale-increase                                  |
-| C--              | text-scale-decrease                                  |
-| C-c a            | org-agenda                                           |
-| C-c c            | org-capture                                          |
-| C-c d            | cbilson/duplicate-start-of-line-or-region            |
-| C-c f            | find-file-in-project                                 |
-| C-c g            | magit-status                                         |
-| C-c h ...        | helm prefix                                          |
-| C-c l            | org-store-link                                       |
-| C-c m ...        | mc/ prefix                                           |
-| C-c n            | cbilson/cleanup-buffer                               |
-| C-c o ...        | prefix for Omnisharp keybindings                     |
-| C-c o f          | omnisharp-mode                                       |
-| C-c o j          | omnisharp-start-omnisharp-server (Omnisharp jack-in) |
-| C-c p ...        | projectile prefix                                    |
-| C-c q            | join-line                                            |
-| C-c r            | org-refile                                           |
-| C-c t            | eshell                                               |
-| C-c v            | eval-buffer                                          |
-| C-c y            | bury-buffer                                          |
-| C-c ;            | iedit-mode                                           |
-| C-c C-j          | cider-jack-in                                        |
-| C-c C-k          | projectile-compile-project, compile                  |
-| C-c C-r          | revert-buffer                                        |
-| C-c C-v t        | org-babel-tangle                                     |
-| C-c C-;          | iedit-mode-from-isearch                              |
-| C-o              | loccur-current                                       |
-| C-x m            | eshell                                               |
-| C-x o            | other-window                                         |
-| C-x u            | undo-tree-visualize                                  |
-| C-x C-i          | imenu                                                |
-| C-x C-j          | dired-jump                                           |
-| C-x C-m          | shell                                                |
-| C-x C-o          | (other-window 2)                                     |
-| C-x C-r          | cbilson/recentf-ido-find-file                        |
-| C-x M-f          | ido-find-file-other-window                           |
-| C-M-a            | sp-backward-down-sexp                                |
-| C-M-b            | sp-backward-sexp                                     |
-| C-M-d            | sp-down-sexp                                         |
-| C-M-f            | sp-forward-sexp                                      |
-| C-M-h            | backward-kill-word                                   |
-| C-S-a            | sp-beginning-of-sexp                                 |
-| C-S-d            | sp-end-of-sexp                                       |
-| C-M-e            | sp-up-sexp                                           |
-| C-M-u            | sp-backward-up-sexp                                  |
-| C-M-t            | sp-transpose-sexp                                    |
-| C-M-n            | sp-next-sexp                                         |
-| C-M-p            | sp-previous-sexp                                     |
-| C-M-k            | sp-kill-sexp                                         |
-| C-M-w            | sp-copy-sexp                                         |
-| C-<right>        | sp-forward-slurp-sexp                                |
-| C-<left>         | sp-forward-barf-sexp                                 |
-| C-M-<left>       | sp-backward-slurp-sexp                               |
-| C-M-<right>      | sp-backward-barf-sexp                                |
-| C-M-<delete>     | sp-splice-sexp-killing-forward                       |
-| C-M-<backspace>  | sp-splice-sexp-killing-backward                      |
-| C-S-<backspace>  | sp-splice-sexp-killing-around                        |
-| C-]              | sp-select-next-thing-exchange                        |
-| C-<left_bracket> | sp-select-previous-thing                             |
-| C-M-]            | sp-select-next-thing                                 |
-| M-_              | undo-tree-redo                                       |
-| M-<delete>       | sp-unwrap-sexp                                       |
-| M-<backspace>    | sp-backward-unwrap-sexp                              |
-| M-g c            | goto-char                                            |
-| M-g <TAB>        | move-to-column                                       |
-| M-B              | sp-backward-symbol                                   |
-| M-D              | sp-splice-sexp                                       |
-| M-F              | sp-forward-symbol                                    |
-| H-<right>        | enlarge-window-horizontally                          |
-| H-<left>         | shrink-window-horizontally                           |
-| H-<up>           | enlarge-window                                       |
-| H-<down>         | shrink-window                                        |
-| H-t              | sp-prefix-tag-object                                 |
-| H-p              | sp-prefix-pair-object                                |
-| H-s c            | sp-convolute-sexp                                    |
-| H-s a            | sp-absorb-sexp                                       |
-| H-s e            | sp-emit-sexp                                         |
-| H-s p            | sp-add-to-previous-sexp                              |
-| H-s n            | sp-add-to-next-sexp                                  |
-| H-s j            | sp-join-sexp                                         |
-| H-s s            | sp-split-sexp                                        |
+   | Shortcut         | What it Does                                         |
+   |------------------+------------------------------------------------------|
+   | C-_              | undo-tree-undo                                       |
+   | C-+              | text-scale-increase                                  |
+   | C--              | text-scale-decrease                                  |
+   | C-c a            | org-agenda                                           |
+   | C-c c            | org-capture                                          |
+   | C-c d            | cbilson/duplicate-start-of-line-or-region            |
+   | C-c f            | find-file-in-project                                 |
+   | C-c g            | magit-status                                         |
+   | C-c h ...        | helm prefix                                          |
+   | C-c l            | org-store-link                                       |
+   | C-c m ...        | mc/ prefix                                           |
+   | C-c n            | cbilson/cleanup-buffer                               |
+   | C-c o ...        | prefix for Omnisharp keybindings                     |
+   | C-c o f          | omnisharp-mode                                       |
+   | C-c o j          | omnisharp-start-omnisharp-server (Omnisharp jack-in) |
+   | C-c p ...        | projectile prefix                                    |
+   | C-c q            | join-line                                            |
+   | C-c r            | org-refile                                           |
+   | C-c s            | powershell                                           |
+   | C-c t            | eshell                                               |
+   | C-c v            | eval-buffer                                          |
+   | C-c y            | bury-buffer                                          |
+   | C-c ;            | iedit-mode                                           |
+   | C-c C-j          | cider-jack-in                                        |
+   | C-c C-k          | projectile-compile-project, compile                  |
+   | C-c C-r          | revert-buffer                                        |
+   | C-c C-s          | TODO: Send to powershell                             |
+   | C-c C-v t        | org-babel-tangle                                     |
+   | C-c C-;          | iedit-mode-from-isearch                              |
+   | C-o              | loccur-current                                       |
+   | C-x m            | eshell                                               |
+   | C-x o            | other-window                                         |
+   | C-x u            | undo-tree-visualize                                  |
+   | C-x C-i          | imenu                                                |
+   | C-x C-j          | dired-jump                                           |
+   | C-x C-m          | shell                                                |
+   | C-x C-o          | (other-window 2)                                     |
+   | C-x C-r          | helm-recentf                                         |
+   | C-M-a            | sp-backward-down-sexp                                |
+   | C-M-b            | sp-backward-sexp                                     |
+   | C-M-d            | sp-down-sexp                                         |
+   | C-M-f            | sp-forward-sexp                                      |
+   | C-M-h            | backward-kill-word                                   |
+   | C-S-a            | sp-beginning-of-sexp                                 |
+   | C-S-d            | sp-end-of-sexp                                       |
+   | C-M-e            | sp-up-sexp                                           |
+   | C-M-u            | sp-backward-up-sexp                                  |
+   | C-M-t            | sp-transpose-sexp                                    |
+   | C-M-n            | sp-next-sexp                                         |
+   | C-M-p            | sp-previous-sexp                                     |
+   | C-M-k            | sp-kill-sexp                                         |
+   | C-M-w            | sp-copy-sexp                                         |
+   | C-<right>        | sp-forward-slurp-sexp                                |
+   | C-<left>         | sp-forward-barf-sexp                                 |
+   | C-M-<left>       | sp-backward-slurp-sexp                               |
+   | C-M-<right>      | sp-backward-barf-sexp                                |
+   | C-M-<delete>     | sp-splice-sexp-killing-forward                       |
+   | C-M-<backspace>  | sp-splice-sexp-killing-backward                      |
+   | C-S-<backspace>  | sp-splice-sexp-killing-around                        |
+   | C-]              | sp-select-next-thing-exchange                        |
+   | C-<left_bracket> | sp-select-previous-thing                             |
+   | C-M-]            | sp-select-next-thing                                 |
+   | M-_              | undo-tree-redo                                       |
+   | M-<delete>       | sp-unwrap-sexp                                       |
+   | M-<backspace>    | sp-backward-unwrap-sexp                              |
+   | M-g c            | goto-char                                            |
+   | M-g <TAB>        | move-to-column                                       |
+   | M-B              | sp-backward-symbol                                   |
+   | M-D              | sp-splice-sexp                                       |
+   | M-F              | sp-forward-symbol                                    |
+   | M-w              | easy-kill prefix                                     |
+   | M-w b            | save buffer-file-name or default-directory           |
+   | M-w d            | save defun at point                                  |
+   | M-w D            | save current defun name                              |
+   | M-w f            | save file at point                                   |
+   | M-w l            | save list at point                                   |
+   | M-w s            | save sexp at point                                   |
+   | M-w w            | save word at point                                   |
+   | H-<right>        | enlarge-window-horizontally                          |
+   | H-<left>         | shrink-window-horizontally                           |
+   | H-<up>           | enlarge-window                                       |
+   | H-<down>         | shrink-window                                        |
+   | H-t              | sp-prefix-tag-object                                 |
+   | H-p              | sp-prefix-pair-object                                |
+   | H-s c            | sp-convolute-sexp                                    |
+   | H-s a            | sp-absorb-sexp                                       |
+   | H-s e            | sp-emit-sexp                                         |
+   | H-s p            | sp-add-to-previous-sexp                              |
+   | H-s n            | sp-add-to-next-sexp                                  |
+   | H-s j            | sp-join-sexp                                         |
+   | H-s s            | sp-split-sexp                                        |
 
 ** General Keybindings
 
@@ -748,10 +762,11 @@ It can be loaded by putting the following in your .emacs.d/init.el:
   (global-set-key (kbd "C-S-p") 'cbilson/previous-line-more)
   (global-set-key (kbd "C-x m") 'eshell)
   (global-set-key (kbd "C-x C-m") 'shell)
-  (global-set-key (kbd "C-x M-f") 'ido-find-file-other-window)
+  ;; (global-set-key (kbd "C-x M-f") 'ido-find-file-other-window)
   (global-set-key (kbd "C-x C-i") 'imenu)
   (global-set-key (kbd "C-x C-j") 'dired-jump)
-  (global-set-key (kbd "C-x C-r") 'cbilson/recentf-ido-find-file)
+  ;;(global-set-key (kbd "C-x C-r") 'cbilson/recentf-ido-find-file)
+  (global-set-key (kbd "C-x C-r") 'helm-recentf)
   (global-set-key (kbd "C-c a") 'org-agenda)
   (global-set-key (kbd "C-c c") 'org-capture)
   (global-set-key (kbd "C-c d") 'cbilson/duplicate-start-of-line-or-region)
@@ -785,6 +800,17 @@ It can be loaded by putting the following in your .emacs.d/init.el:
   (add-hook 'prog-mode-hook 'idle-highlight))
 
 #+end_src
+** ag
+
+*** Code
+    #+BEGIN_SRC emacs-lisp
+      (when (package-installed-p 'ag)
+        (setq ag-executable
+              (cbilson/first-existing-file
+               (list (concat cbilson/chocolatey-bin-path "ag.bat")
+                     (concat cbilson/chocolatey-bin-path "ag.exe")
+                     "/usr/local/bin/ag"))))
+    #+END_SRC
 ** C
 #+begin_src emacs-lisp
 (eval-after-load 'cc-mode
@@ -822,7 +848,7 @@ It can be loaded by putting the following in your .emacs.d/init.el:
 
          ;; omnisharp-mode is really slow for big C# files, so turning off for now
          ;; (add-hook 'csharp-mode-hook 'omnisharp-mode)
-         
+
          (global-set-key (kbd "C-c o j") 'omnisharp-start-omnisharp-server)
          (define-key omnisharp-mode-map (kbd "M-.") 'omnisharp-go-to-definition)
          (define-key omnisharp-mode-map (kbd "C-c C-k") 'omnisharp-build-in-emacs)
@@ -922,11 +948,11 @@ It can be loaded by putting the following in your .emacs.d/init.el:
        (if (not (string-match "^\\(find\\|grep\\)" command))
            (flet ((display-buffer)
               (set-window-point)
-              (goto-char)) 
+              (goto-char))
          (fset 'display-buffer 'ignore)
          (fset 'goto-char 'ignore)
          (fset 'set-window-point 'ignore)
-         (save-window-excursion 
+         (save-window-excursion
            ad-do-it))
          ad-do-it))
 
@@ -1002,7 +1028,7 @@ It can be loaded by putting the following in your .emacs.d/init.el:
    - C-c r: org-refile
    - [[http://sachachua.com/blog/2015/02/learn-take-notes-efficiently-org-mode/][Learn how to take notes more efficiently in Org Mode]]
    - [[http://orgmode.org/worg/org-hacks.html][Org-Hacks]]
-     
+
    #+CAPTION: Basic Org-Settings
    #+begin_src emacs-lisp
      (eval-after-load 'org
@@ -1139,12 +1165,75 @@ For XML modes, I want emmet-mode active.
 
 * Minor Modes
 ** ace-jump-mode
-   
+
    #+begin_src emacs-lisp
    (when (package-installed-p 'ace-jump-mode)
      (require 'ace-jump-mode)
      (define-key global-map (kbd "C-c SPC") 'ace-jump-mode))
    #+end_src
+
+** corext
+
+   Functions I am cobbling together to use with CoreXT at work.
+
+   #+BEGIN_SRC emacs-lisp
+     (defun corext-contains-project-file-p (dir)
+       (directory-files dir nil "proj$"))
+
+     (defun corext-compile ()
+       (interactive)
+       (let* ((buffer-dir (file-name-directory (buffer-file-name)))
+              (default-directory (locate-dominating-file
+                                  buffer-dir
+                                  #'corext-contains-project-file-p))
+              (build-cmd (concat (projectile-project-root)
+                                 ".config/.corext/gen/InPath/build.cmd")))
+         (compilation-start build-cmd)))
+
+     (defvar corext-default-test-project nil)
+     (defvar corext-test-project-history nil)
+     (defvar corext-default-test-name nil)
+     (defvar corext-test-name-history nil)
+
+     (defun corext-read-name (prompt default history-sym)
+       (let* ((history (symbol-value history-sym)))
+         (read-shell-command
+          prompt
+          nil
+          (if (equal (car history) default)
+              (list history . 1)
+            history-sym))))
+
+     ;; (corext-read-name "Foo: " "bar" 'foo-history)
+     ;; (corext-read-name "Test Name: " corext-default-test-name 'corext-test-name-history)
+
+     (defun corext-read-test-project (&optional test-project)
+       (let* ((test-project (or test-project corext-default-test-project)))
+         (corext-read-name "Test Project: "
+                           test-project
+                           'corext-test-project-history)))
+
+     (defun corext-read-test-name (&optional test-name)
+       (let* ((test-name (or test-name corext-default-test-name)))
+         (corext-read-name "Test Name: "
+                           test-name
+                           'corext-test-name-history)))
+
+     (defun corext-test (&optional test-name)
+       (interactive "M")
+       (let* ((buffer-dir (file-name-directory (buffer-file-name)))
+              (test-base-dir (concat (projectile-project-root)
+                                     "out/debug-AMD64/Services/DatacenterManager"))
+              (test-name
+               ())
+              (default-directory (locate-dominating-file
+                                  buffer-dir
+                                  #'corext-contains-project-file-p))
+              (build-cmd (concat (projectile-project-root)
+                                 ".config/.corext/gen/InPath/build.cmd")))
+         (compilation-start build-cmd))
+       )
+   #+END_SRC
 
 ** delete-selection-mode
    When Delete Selection mode is enabled, typed text replaces the selection
@@ -1157,12 +1246,53 @@ For XML modes, I want emmet-mode active.
 
 ** easy-kill
 
-#+begin_src emacs-lisp
+   easy-kill is a drop-in replacement for kill-ring-save.
+
+   M-w serves as both a command and a prefix key for other
+   commands. M-w alone saves in the order of active region, url, email
+   and finally current line (See easy-kill-try-things). As a prefix
+   key:
+
+   | M-w w | save word at point                                                                                                      |
+   | M-w s | save sexp at point                                                                                                      |
+   | M-w l | save list at point (enclosing sexp)                                                                                     |
+   | M-w d | save defun at point                                                                                                     |
+   | M-w D | save current defun name                                                                                                 |
+   | M-w f | save file at point                                                                                                      |
+   | M-w b | save buffer-file-name or default-directory. - changes the kill to the directory name, + to full name and 0 to basename. |
+
+   The following keys modify the selection:
+
+   | @             | append selection to previous kill and exit. For example, M-w d @ will append current function to last kill. |
+   | C-w           | kill selection and exit                                                                                     |
+   | +, - and 1..9 | expand/shrink selection                                                                                     |
+   | 0             | shrink the selection to the intitial size i.e. before any expansion                                         |
+   | C-SPC         | turn selection into an active region                                                                        |
+   | C-g           | abort                                                                                                       |
+   | ?             | help                                                                                                        |
+
+   For example, M-w w saves current word, repeat w to expand the kill
+   to include the next word. 5 to include the next 5 words etc. The
+   other commands also follow this pattern.
+
+   +/- does expanding/shrinking according to the thing selected. So
+   for word the expansion is word-wise, for line line-wise, for list
+   or sexp, list-wise.
+
+   list-wise expanding/shrinking work well in lispy modes (elisp,
+   Common Lisp, Scheme, Clojure etc.), smie-based modes (Prolog, SML,
+   Modula2, Shell, Ruby, Octave, CSS, SQL etc.), Org mode, Nxml mode
+   and Js2 mode.
+
+   To copy the enclosing list in lispy modes, I used to do a lot of
+   C-M-u C-M-SPC M-w. Now the key sequence is replaced by M-w l (save
+   list at point)
+
+   #+begin_src emacs-lisp
   (require 'easy-kill)
   (global-set-key [remap kill-ring-save] 'easy-kill)
   (global-set-key [remap mark-sexp] 'easy-mark)
-
-#+end_src
+   #+end_src
 
 ** ediff
 
@@ -1261,12 +1391,14 @@ For XML modes, I want emmet-mode active.
     indent_size = 2
     #+END_QUOTE
 
-** expand-region
+** TODO expand-region
 
-#+begin_src emacs-lisp
+   TODO: Maybe don't need this, as easy-kill also expands regions.
+
+   #+begin_src emacs-lisp
 (when (package-installed-p 'expand-region)
   (global-set-key (kbd "C-=") 'er/expand-region))
-#+end_src
+   #+end_src
 
 ** flx
 
@@ -1274,19 +1406,19 @@ For XML modes, I want emmet-mode active.
    matching like reshaper ("_A_thing_B_whatever" matched by "AB")
    along with even more powerful matching.
 
-#+begin_src emacs-lisp
+   #+begin_src emacs-lisp
   (when (and (package-installed-p 'ido)
              (package-installed-p 'flx-ido))
     (flx-ido-mode 1)
     (setq ido-enable-flex-matching t
           ido-use-faces nil))
-#+end_src
+   #+end_src
 
 ** helm
 
 *** elisp
 
-#+begin_src emacs-lisp
+    #+begin_src emacs-lisp
   (when (package-installed-p 'helm)
     (require 'helm-config)
 
@@ -1306,22 +1438,18 @@ For XML modes, I want emmet-mode active.
     (global-set-key (kbd "C-x C-b") 'helm-buffers-list)
     (global-set-key (kbd "C-c h o") 'helm-occur))
 
-#+end_src
+    #+end_src
 
-** ido
-   I am stuck in-between ido-mode and helm
+** TODO ido
+
+   TODO: Maybe not needed anymore?
 
    #+begin_src emacs-lisp
-     (setq ido-enable-flex-matching t
-           ido-everywhere t
-           ido-use-filename-at-point 'guess
-           ido-use-url-at-point nil)
-
-     (ido-mode)
+     (setq ido-enable-flex-matching t)
    #+end_src
 
 ** iedit
-   
+
    | Key     | Binding                 |
    |---------+-------------------------|
    | C-c ;   | iedit-mode              |
@@ -1354,7 +1482,7 @@ For XML modes, I want emmet-mode active.
 
 *** elisp
 
-#+begin_src emacs-lisp
+    #+begin_src emacs-lisp
 (when (package-installed-p 'multiple-cursors)
   (global-set-key (kbd "C-c m a") 'mc/edit-beginnings-of-lines)
   (global-set-key (kbd "C-c m c") 'mc/add-cursor-on-click)
@@ -1362,25 +1490,26 @@ For XML modes, I want emmet-mode active.
   (global-set-key (kbd "C-c m f") 'mc/mark-all-like-this-in-defun)
   (global-set-key (kbd "C-c m l") 'mc/edit-lines)
   (global-set-key (kbd "C-c m m") 'mc/mark-all-dwim))
-#+end_src
+    #+end_src
 
 ** powershell
 
    This mode lets you run powershell as an inferior shell.
 
+   I'm using my own fork in my settings directory.
+
    #+begin_src emacs-lisp
-     (setq powershell-eldoc-def-files
-           nil)
-   #+end_src
+     (add-to-list 'load-path
+                  (file-name-as-directory
+                   (concat cbilson/lisp-dir "powershell.el")))
 
-** powershell-mode
+     (require 'powershell)
 
-   - Allow file-local powershell indent.
+     (setq powershell-eldoc-def-files nil)
 
-     #+begin_src emacs-lisp
      (add-to-list 'safe-local-variable-values '(powershell-indent . 1))
      (setq powershell-indent 2)
-     #+end_src
+   #+end_src
 
 ** projectile
 
@@ -1388,6 +1517,7 @@ For XML modes, I want emmet-mode active.
      highly recommended that you install the optional flx-ido package,
      which provides a much more powerful alternative to ido's built-in
      flex matching.
+     - DONE
 
 *** Keys
 
@@ -1410,25 +1540,14 @@ For XML modes, I want emmet-mode active.
 
 *** Code
 
-#+begin_src emacs-lisp
+    #+begin_src emacs-lisp
   (when (package-installed-p 'projectile)
     (projectile-global-mode)
     (setq projectile-enable-caching t
           projectile-indexing-method 'native)
 
     (define-key projectile-mode-map (kbd "C-c C-k") 'projectile-compile-project))
-#+end_src
-
-** recentf
-   `recentf' keeps track of recently visited files.
-   - Show 15 matching items, but remember the last 200.
-
-   #+begin_src emacs-lisp
-   (require 'recentf)
-   (recentf-mode +1)
-   (setq recentf-max-menu-items 15
-	 recentf-max-saved-items 200)
-   #+end_src
+    #+end_src
 
 ** saveplace
    Remember where I was last time I visited a file.
@@ -1436,7 +1555,7 @@ For XML modes, I want emmet-mode active.
    #+begin_src emacs-lisp
      (require 'saveplace)
      (setq-default save-place t
-		   save-place-file (concat user-emacs-directory "places"))
+                   save-place-file (concat user-emacs-directory "places"))
    #+end_src
 
 ** smartparens
@@ -1473,53 +1592,53 @@ For XML modes, I want emmet-mode active.
 
 *** elisp
 
-#+begin_src emacs-lisp
-  (eval-after-load 'smartparens
-    '(progn
-       (smartparens-global-mode +1)
-       (define-key sp-keymap (kbd "C-M-f") 'sp-forward-sexp)
-       (define-key sp-keymap (kbd "C-M-b") 'sp-backward-sexp)
+    #+begin_src emacs-lisp
+      (eval-after-load 'smartparens
+        '(progn
+           (smartparens-global-mode +1)
+           (define-key sp-keymap (kbd "C-M-f") 'sp-forward-sexp)
+           (define-key sp-keymap (kbd "C-M-b") 'sp-backward-sexp)
 
-       (define-key sp-keymap (kbd "C-M-d") 'sp-down-sexp)
-       (define-key sp-keymap (kbd "C-M-a") 'sp-backward-down-sexp)
-       (define-key sp-keymap (kbd "C-S-a") 'sp-beginning-of-sexp)
-       (define-key sp-keymap (kbd "C-S-d") 'sp-end-of-sexp)
+           (define-key sp-keymap (kbd "C-M-d") 'sp-down-sexp)
+           (define-key sp-keymap (kbd "C-M-a") 'sp-backward-down-sexp)
+           (define-key sp-keymap (kbd "C-S-a") 'sp-beginning-of-sexp)
+           (define-key sp-keymap (kbd "C-S-d") 'sp-end-of-sexp)
 
-       (define-key sp-keymap (kbd "C-M-e") 'sp-up-sexp)
-       (define-key emacs-lisp-mode-map (kbd ")") 'sp-up-sexp)
-       (define-key sp-keymap (kbd "C-M-u") 'sp-backward-up-sexp)
-       (define-key sp-keymap (kbd "C-M-t") 'sp-transpose-sexp)
+           (define-key sp-keymap (kbd "C-M-e") 'sp-up-sexp)
+           (define-key emacs-lisp-mode-map (kbd ")") 'sp-up-sexp)
+           (define-key sp-keymap (kbd "C-M-u") 'sp-backward-up-sexp)
+           (define-key sp-keymap (kbd "C-M-t") 'sp-transpose-sexp)
 
-       (define-key sp-keymap (kbd "C-M-n") 'sp-next-sexp)
-       (define-key sp-keymap (kbd "C-M-p") 'sp-previous-sexp)
+           (define-key sp-keymap (kbd "C-M-n") 'sp-next-sexp)
+           (define-key sp-keymap (kbd "C-M-p") 'sp-previous-sexp)
 
-       (define-key sp-keymap (kbd "C-M-k") 'sp-kill-sexp)
-       (define-key sp-keymap (kbd "C-M-w") 'sp-copy-sexp)
+           (define-key sp-keymap (kbd "C-M-k") 'sp-kill-sexp)
+           (define-key sp-keymap (kbd "C-M-w") 'sp-copy-sexp)
 
-       (define-key sp-keymap (kbd "M-<delete>") 'sp-unwrap-sexp)
-       (define-key sp-keymap (kbd "M-<backspace>") 'sp-backward-unwrap-sexp)
+           (define-key sp-keymap (kbd "M-<delete>") 'sp-unwrap-sexp)
+           (define-key sp-keymap (kbd "M-<backspace>") 'sp-backward-unwrap-sexp)
 
-       (define-key sp-keymap (kbd "C-<right>") 'sp-forward-slurp-sexp)
-       (define-key sp-keymap (kbd "C-<left>") 'sp-forward-barf-sexp)
-       (define-key sp-keymap (kbd "C-M-<left>") 'sp-backward-slurp-sexp)
-       (define-key sp-keymap (kbd "C-M-<right>") 'sp-backward-barf-sexp)
+           (define-key sp-keymap (kbd "C-<right>") 'sp-forward-slurp-sexp)
+           (define-key sp-keymap (kbd "C-<left>") 'sp-forward-barf-sexp)
+           (define-key sp-keymap (kbd "C-M-<left>") 'sp-backward-slurp-sexp)
+           (define-key sp-keymap (kbd "C-M-<right>") 'sp-backward-barf-sexp)
 
-       (define-key sp-keymap (kbd "M-D") 'sp-splice-sexp)
-       (define-key sp-keymap (kbd "C-M-<delete>") 'sp-splice-sexp-killing-forward)
-       (define-key sp-keymap (kbd "C-M-<backspace>") 'sp-splice-sexp-killing-backward)
-       (define-key sp-keymap (kbd "C-S-<backspace>") 'sp-splice-sexp-killing-around)
+           (define-key sp-keymap (kbd "M-D") 'sp-splice-sexp)
+           (define-key sp-keymap (kbd "C-M-<delete>") 'sp-splice-sexp-killing-forward)
+           (define-key sp-keymap (kbd "C-M-<backspace>") 'sp-splice-sexp-killing-backward)
+           (define-key sp-keymap (kbd "C-S-<backspace>") 'sp-splice-sexp-killing-around)
 
-       (define-key sp-keymap (kbd "C-]") 'sp-select-next-thing-exchange)
-       (define-key sp-keymap (kbd "C-<left_bracket>") 'sp-select-previous-thing)
-       (define-key sp-keymap (kbd "C-M-]") 'sp-select-next-thing)
+           (define-key sp-keymap (kbd "C-]") 'sp-select-next-thing-exchange)
+           (define-key sp-keymap (kbd "C-<left_bracket>") 'sp-select-previous-thing)
+           (define-key sp-keymap (kbd "C-M-]") 'sp-select-next-thing)
 
-       (define-key sp-keymap (kbd "M-F") 'sp-forward-symbol)))
+           (define-key sp-keymap (kbd "M-F") 'sp-forward-symbol)))
 
-  ;; If it's installed, require it to get it loaded
-  (when (package-installed-p 'smartparens)
-    (require 'smartparens-config)
-    (show-smartparens-global-mode +1))
-#+end_src
+      ;; If it's installed, require it to get it loaded
+      (when (package-installed-p 'smartparens)
+        (require 'smartparens-config)
+        (show-smartparens-global-mode +1))
+    #+end_src
 
 ** smooth-scrolling
 
@@ -1554,7 +1673,7 @@ For XML modes, I want emmet-mode active.
 
 ** undo-tree
 
-#+begin_src emacs-lisp
+   #+begin_src emacs-lisp
 (when (package-installed-p 'undo-tree)
   (undo-tree-mode +1)
 
@@ -1563,7 +1682,7 @@ For XML modes, I want emmet-mode active.
   (global-set-key (kbd "C-_") 'undo-tree-undo)
   (global-set-key (kbd "M-_") 'undo-tree-redo)
   (global-set-key (kbd "C-x u") 'undo-tree-visualize))
-#+end_src
+   #+end_src
 
 ** winner-mode
 
@@ -1583,20 +1702,21 @@ For XML modes, I want emmet-mode active.
 
 *** elisp
 
-#+begin_src emacs-lisp
+    #+begin_src emacs-lisp
     (winner-mode +1)
-#+end_src
+    #+end_src
 
 ** yasnippet
 
-#+begin_src emacs-lisp
+   #+begin_src emacs-lisp
   (require 'yasnippet)
   (setq yas-snippet-dirs
         (file-name-as-directory
          (concat cbilson/emacs-dir "snippets")))
 
   (yas-global-mode +1)
-#+end_src
+   #+end_src
+
 ** uniquify
    The library uniquify overrides Emacs’ default mechanism for
    making buffer names unique (using suffixes like <2>, <3> etc.)
@@ -1617,7 +1737,7 @@ For XML modes, I want emmet-mode active.
    #+end_src
 
 ** writegood
-   
+
    Highlights bad grammar and writing anti-patterns
 
    #+begin_src emacs-lisp
