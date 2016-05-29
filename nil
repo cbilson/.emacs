@@ -1,0 +1,55 @@
+;; Use this is your .emacs, in your home or start emacs with the below as the
+;; startup file.
+
+;; Keep track of loading time
+(defconst emacs-start-time (current-time))
+
+(require 'cl)
+(require 'package)
+
+(setq package-archives
+      '(("gnu" . "http://elpa.gnu.org/packages/")
+        ("melpa" . "http://melpa.milkbox.net/packages/")
+        ("marmalade" . "https://marmalade-repo.org/packages/")))
+
+(package-initialize)
+
+(when (null package-archive-contents)
+  (package-refresh-contents))
+
+;; figure out where my stuff is
+(defvar cbilson/one-drive
+  (let* ((candidates
+          (mapcar #'substitute-in-file-name
+                  '("$HOME\\OneDrive"
+                    "$HOME\\SkyDrive"
+                    "$HOME\\..\\..\\OneDrive"
+                    "$HOME\\..\\..\\SkyDrive"))))
+    (file-name-as-directory
+     (find-if #'file-exists-p candidates))))
+
+(defvar cbilson/emacs-dir
+  (file-name-as-directory (concat cbilson/one-drive "Emacs")))
+
+(defvar cbilson/backups-dir (concat user-emacs-directory "backups"))
+
+(defvar cbilson/org-dir
+  (file-name-as-directory (concat cbilson/one-drive "Documents/org")))
+
+(defvar cbilson/lisp-dir
+  (file-name-as-directory (concat cbilson/emacs-dir "site-lisp")))
+
+(add-to-list 'load-path cbilson/lisp-dir)
+
+(defvar cbilson/tools-dir
+  (file-name-as-directory (concat cbilson/one-drive "Tools")))
+
+(require 'org)
+(org-babel-load-file
+ (expand-file-name "settings.org"
+                   cbilson/emacs-dir))
+
+;; Message how long it took to load everything (minus packages)
+(let ((elapsed (float-time (time-subtract (current-time)
+                                          emacs-start-time))))
+  (message "Loading settings...done (%.3fs)" elapsed))
